@@ -1,13 +1,10 @@
 import { Canvas, useFrame } from "@react-three/fiber";
 import {
   ContactShadows,
-  Environment,
   Float,
-  Html,
   OrbitControls,
   PerspectiveCamera,
   Stars,
-  Text,
 } from "@react-three/drei";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -25,7 +22,7 @@ import {
   Terminal,
   WandSparkles,
 } from "lucide-react";
-import { Component, Suspense, useEffect, useMemo, useRef } from "react";
+import { Component, useEffect, useMemo, useRef } from "react";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -182,7 +179,7 @@ function Coder({ leftHand, rightHand, head }) {
 function Monitor({ position, rotation = [0, 0, 0], small = false, cursor }) {
   const w = small ? 0.82 : 1.25;
   const h = small ? 0.48 : 0.72;
-  const codeLines = small ? ["api.flow()", "bot.reply()", "ship()"] : ["const build = MayoDevs.ai", "agent.run(automation)", "dashboard.sync()", "deploy({ glow: true })"];
+  const lineWidths = small ? [0.34, 0.26, 0.21] : [0.64, 0.44, 0.52, 0.38];
 
   return (
     <group position={position} rotation={rotation}>
@@ -194,18 +191,11 @@ function Monitor({ position, rotation = [0, 0, 0], small = false, cursor }) {
         <planeGeometry args={[w * 0.88, h * 0.74]} />
         <meshStandardMaterial color="#07121a" emissive="#082f38" emissiveIntensity={0.95} />
       </mesh>
-      {codeLines.map((line, index) => (
-        <Text
-          key={line}
-          position={[-w * 0.35, h * 0.22 - index * 0.12, 0.07]}
-          fontSize={small ? 0.035 : 0.05}
-          color={index % 2 ? "#d7e0e8" : "#47f3ff"}
-          anchorX="left"
-          anchorY="middle"
-          maxWidth={w * 0.72}
-        >
-          {line}
-        </Text>
+      {lineWidths.map((width, index) => (
+        <mesh key={index} position={[-w * 0.17 + width * 0.5, h * 0.22 - index * 0.12, 0.07]}>
+          <planeGeometry args={[width, small ? 0.026 : 0.032]} />
+          <meshBasicMaterial color={index % 2 ? "#d7e0e8" : "#47f3ff"} />
+        </mesh>
       ))}
       {!small && (
         <mesh ref={cursor} position={[0.22, -0.14, 0.075]}>
@@ -260,23 +250,36 @@ function Keyboard() {
 }
 
 function CodeParticles() {
-  const symbols = ["</>", "AI", "01", "API", "UX", "BOT", "{}"];
+  const particles = [
+    { color: "#47f3ff", size: 0.12 },
+    { color: "#d7e0e8", size: 0.08 },
+    { color: "#47f3ff", size: 0.1 },
+    { color: "#d7e0e8", size: 0.07 },
+    { color: "#47f3ff", size: 0.09 },
+    { color: "#d7e0e8", size: 0.06 },
+    { color: "#47f3ff", size: 0.08 },
+  ];
+
   return (
     <Float speed={2.2} rotationIntensity={0.25} floatIntensity={0.45}>
       <group position={[0, 1.35, 0.05]}>
-        {symbols.map((symbol, index) => {
-          const angle = (index / symbols.length) * Math.PI * 2;
+        {particles.map((particle, index) => {
+          const angle = (index / particles.length) * Math.PI * 2;
           return (
-            <Text
-              key={symbol}
+            <mesh
+              key={index}
               position={[Math.cos(angle) * 1.35, Math.sin(index) * 0.2, Math.sin(angle) * 0.5]}
-              fontSize={0.12}
-              color={index % 2 ? "#d7e0e8" : "#47f3ff"}
-              anchorX="center"
-              anchorY="middle"
+              rotation={[index * 0.4, angle, 0]}
             >
-              {symbol}
-            </Text>
+              <octahedronGeometry args={[particle.size, 0]} />
+              <meshStandardMaterial
+                color={particle.color}
+                emissive={particle.color}
+                emissiveIntensity={0.9}
+                metalness={0.4}
+                roughness={0.24}
+              />
+            </mesh>
           );
         })}
       </group>
@@ -287,28 +290,23 @@ function CodeParticles() {
 function HeroScene() {
   return (
     <SceneBoundary>
-      <Suspense fallback={<StaticScene />}>
-        <Canvas dpr={[1, 1.7]} gl={{ antialias: true, alpha: true }}>
-          <PerspectiveCamera makeDefault position={[0, 1.4, 4.35]} fov={43} />
-          <ambientLight intensity={0.9} />
-          <pointLight position={[2.5, 3, 2]} color="#47f3ff" intensity={35} />
-          <pointLight position={[-3, 2.4, -1]} color="#ffffff" intensity={16} />
-          <Stars radius={40} depth={24} count={750} factor={2.2} saturation={0} fade speed={0.4} />
-          <Rig />
-          <ContactShadows position={[0, -1.24, 0]} opacity={0.42} scale={6} blur={2.8} far={3} />
-          <Environment preset="city" />
-          <OrbitControls
-            enablePan={false}
-            minDistance={3.2}
-            maxDistance={6}
-            minPolarAngle={Math.PI / 4}
-            maxPolarAngle={Math.PI / 2.05}
-          />
-          <Html position={[0, 1.95, -1.2]} center>
-            <div className="scene-chip">drag to inspect setup</div>
-          </Html>
-        </Canvas>
-      </Suspense>
+      <Canvas dpr={[1, 1.7]} gl={{ antialias: true, alpha: true }}>
+        <PerspectiveCamera makeDefault position={[0, 1.4, 4.35]} fov={43} />
+        <ambientLight intensity={1} />
+        <hemisphereLight intensity={0.7} color="#d7e0e8" groundColor="#05070b" />
+        <pointLight position={[2.5, 3, 2]} color="#47f3ff" intensity={35} />
+        <pointLight position={[-3, 2.4, -1]} color="#ffffff" intensity={16} />
+        <Stars radius={40} depth={24} count={750} factor={2.2} saturation={0} fade speed={0.4} />
+        <Rig />
+        <ContactShadows position={[0, -1.24, 0]} opacity={0.42} scale={6} blur={2.8} far={3} />
+        <OrbitControls
+          enablePan={false}
+          minDistance={3.2}
+          maxDistance={6}
+          minPolarAngle={Math.PI / 4}
+          maxPolarAngle={Math.PI / 2.05}
+        />
+      </Canvas>
     </SceneBoundary>
   );
 }
@@ -405,6 +403,9 @@ function App() {
         </div>
         <div className="scene-wrap">
           <HeroScene />
+          <div className="scene-overlay-chip">
+            <div className="scene-chip">drag to inspect setup</div>
+          </div>
         </div>
       </section>
 

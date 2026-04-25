@@ -81,6 +81,15 @@ a {
   z-index: 2;
 }
 
+.scene-overlay-chip {
+  position: absolute;
+  left: 50%;
+  top: 10%;
+  z-index: 4;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
 .static-scene {
   position: relative;
   z-index: 2;
