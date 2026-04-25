@@ -1,11 +1,4 @@
 import { Canvas, useFrame } from "@react-three/fiber";
-import {
-  ContactShadows,
-  Float,
-  OrbitControls,
-  PerspectiveCamera,
-  Stars,
-} from "@react-three/drei";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import {
@@ -22,7 +15,7 @@ import {
   Terminal,
   WandSparkles,
 } from "lucide-react";
-import { Component, useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -58,51 +51,39 @@ const projects = [
   "UI designs",
 ];
 
-class SceneBoundary extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { failed: false };
-  }
-
-  static getDerivedStateFromError() {
-    return { failed: true };
-  }
-
-  componentDidCatch(error) {
-    console.error("3D scene failed:", error);
-  }
-
-  render() {
-    if (this.state.failed) {
-      return <StaticScene />;
-    }
-
-    return this.props.children;
-  }
-}
-
-function Rig() {
+function Rig({ targetRotation, isDragging }) {
   const group = useRef();
   const leftHand = useRef();
   const rightHand = useRef();
   const head = useRef();
   const cursor = useRef();
+  const halo = useRef();
 
-  useFrame(({ clock, pointer }) => {
+  useFrame(({ clock }) => {
     const t = clock.getElapsedTime();
     if (!group.current || !leftHand.current || !rightHand.current || !head.current || !cursor.current) return;
 
-    group.current.rotation.y = pointer.x * 0.16;
-    group.current.rotation.x = -pointer.y * 0.04;
+    const idleY = Math.sin(t * 0.35) * 0.08;
+    const idleX = Math.cos(t * 0.25) * 0.03;
+    group.current.rotation.y += ((targetRotation.y + idleY) - group.current.rotation.y) * 0.08;
+    group.current.rotation.x += ((targetRotation.x + idleX) - group.current.rotation.x) * 0.08;
     leftHand.current.position.y = 0.6 + Math.sin(t * 11) * 0.035;
     rightHand.current.position.y = 0.6 + Math.cos(t * 13) * 0.035;
     head.current.rotation.y = Math.sin(t * 0.8) * 0.08;
     cursor.current.position.x = 0.34 + Math.sin(t * 4) * 0.28;
     cursor.current.material.opacity = Math.sin(t * 10) > 0 ? 1 : 0.15;
+    if (halo.current) {
+      halo.current.rotation.z += 0.002;
+      halo.current.material.opacity = isDragging ? 0.34 : 0.18;
+    }
   });
 
   return (
     <group ref={group} position={[0, -0.8, 0]}>
+      <mesh ref={halo} position={[0, 1.15, -0.2]} rotation={[0, 0, 0.2]}>
+        <torusGeometry args={[2.45, 0.018, 10, 120]} />
+        <meshBasicMaterial color="#47f3ff" transparent opacity={0.18} />
+      </mesh>
       <Desk />
       <Coder leftHand={leftHand} rightHand={rightHand} head={head} />
       <Monitor cursor={cursor} position={[0, 1.03, -0.74]} />
@@ -261,83 +242,110 @@ function CodeParticles() {
   ];
 
   return (
-    <Float speed={2.2} rotationIntensity={0.25} floatIntensity={0.45}>
-      <group position={[0, 1.35, 0.05]}>
-        {particles.map((particle, index) => {
-          const angle = (index / particles.length) * Math.PI * 2;
-          return (
-            <mesh
-              key={index}
-              position={[Math.cos(angle) * 1.35, Math.sin(index) * 0.2, Math.sin(angle) * 0.5]}
-              rotation={[index * 0.4, angle, 0]}
-            >
-              <octahedronGeometry args={[particle.size, 0]} />
-              <meshStandardMaterial
-                color={particle.color}
-                emissive={particle.color}
-                emissiveIntensity={0.9}
-                metalness={0.4}
-                roughness={0.24}
-              />
-            </mesh>
-          );
-        })}
-      </group>
-    </Float>
+    <group position={[0, 1.35, 0.05]}>
+      {particles.map((particle, index) => {
+        const angle = (index / particles.length) * Math.PI * 2;
+        return (
+          <DriftParticle
+            key={index}
+            color={particle.color}
+            size={particle.size}
+            position={[Math.cos(angle) * 1.35, Math.sin(index) * 0.2, Math.sin(angle) * 0.5]}
+            rotation={[index * 0.4, angle, 0]}
+            speed={0.6 + index * 0.08}
+          />
+        );
+      })}
+    </group>
+  );
+}
+
+function DriftParticle({ color, position, rotation, size, speed }) {
+  const ref = useRef();
+
+  useFrame(({ clock }) => {
+    if (!ref.current) return;
+    const t = clock.getElapsedTime() * speed;
+    ref.current.position.y = position[1] + Math.sin(t) * 0.08;
+    ref.current.rotation.x += 0.006;
+    ref.current.rotation.y += 0.008;
+  });
+
+  return (
+    <mesh ref={ref} position={position} rotation={rotation}>
+      <octahedronGeometry args={[size, 0]} />
+      <meshStandardMaterial
+        color={color}
+        emissive={color}
+        emissiveIntensity={0.9}
+        metalness={0.4}
+        roughness={0.24}
+      />
+    </mesh>
+  );
+}
+
+function SceneSurface({ targetRotation, isDragging }) {
+  return (
+    <>
+      <ambientLight intensity={1.05} />
+      <hemisphereLight intensity={0.9} color="#d7e0e8" groundColor="#05070b" />
+      <pointLight position={[2.5, 3, 2]} color="#47f3ff" intensity={35} />
+      <pointLight position={[-3, 2.4, -1]} color="#ffffff" intensity={16} />
+      <pointLight position={[0, 1.6, 3.5]} color="#8ae8ff" intensity={10} />
+      <Rig targetRotation={targetRotation} isDragging={isDragging} />
+      <mesh position={[0, -1.28, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <circleGeometry args={[2.5, 64]} />
+        <meshBasicMaterial color="#061018" transparent opacity={0.8} />
+      </mesh>
+      <mesh position={[0, -1.27, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[2.1, 2.7, 64]} />
+        <meshBasicMaterial color="#47f3ff" transparent opacity={0.12} />
+      </mesh>
+    </>
   );
 }
 
 function HeroScene() {
-  return (
-    <SceneBoundary>
-      <Canvas dpr={[1, 1.7]} gl={{ antialias: true, alpha: true }}>
-        <PerspectiveCamera makeDefault position={[0, 1.4, 4.35]} fov={43} />
-        <ambientLight intensity={1} />
-        <hemisphereLight intensity={0.7} color="#d7e0e8" groundColor="#05070b" />
-        <pointLight position={[2.5, 3, 2]} color="#47f3ff" intensity={35} />
-        <pointLight position={[-3, 2.4, -1]} color="#ffffff" intensity={16} />
-        <Stars radius={40} depth={24} count={750} factor={2.2} saturation={0} fade speed={0.4} />
-        <Rig />
-        <ContactShadows position={[0, -1.24, 0]} opacity={0.42} scale={6} blur={2.8} far={3} />
-        <OrbitControls
-          enablePan={false}
-          minDistance={3.2}
-          maxDistance={6}
-          minPolarAngle={Math.PI / 4}
-          maxPolarAngle={Math.PI / 2.05}
-        />
-      </Canvas>
-    </SceneBoundary>
-  );
-}
+  const [targetRotation, setTargetRotation] = useState({ x: -0.08, y: 0.24 });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStart = useRef({ x: 0, y: 0 });
+  const dragOrigin = useRef({ x: -0.08, y: 0.24 });
 
-function StaticScene() {
+  const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+
+  const handlePointerDown = (event) => {
+    setIsDragging(true);
+    dragStart.current = { x: event.clientX, y: event.clientY };
+    dragOrigin.current = { ...targetRotation };
+  };
+
+  const handlePointerMove = (event) => {
+    if (!isDragging) return;
+    const dx = event.clientX - dragStart.current.x;
+    const dy = event.clientY - dragStart.current.y;
+
+    setTargetRotation({
+      x: clamp(dragOrigin.current.x + dy * 0.004, -0.55, 0.4),
+      y: clamp(dragOrigin.current.y + dx * 0.006, -1.1, 1.1),
+    });
+  };
+
+  const stopDragging = () => {
+    setIsDragging(false);
+  };
+
   return (
-    <div className="static-scene" aria-label="MayoDevs coding setup preview">
-      <div className="static-screen screen-left">
-        <span>automation.flow()</span>
-        <span>chatbot.reply()</span>
-        <span>dashboard.sync()</span>
-      </div>
-      <div className="static-screen screen-main">
-        <span>const studio = "MayoDevs";</span>
-        <span>build.aiProducts();</span>
-        <span>deploy.animatedSite();</span>
-        <i />
-      </div>
-      <div className="static-screen screen-right">
-        <span>plugins.map()</span>
-        <span>ui.polish()</span>
-        <span>ship()</span>
-      </div>
-      <div className="static-coder">
-        <b />
-        <em />
-        <strong />
-      </div>
-      <div className="static-desk" />
-      <div className="static-keyboard" />
-      <div className="scene-chip">3D scene loading</div>
+    <div
+      className={`scene-shell ${isDragging ? "is-dragging" : ""}`}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={stopDragging}
+      onPointerLeave={stopDragging}
+    >
+      <Canvas camera={{ position: [0, 1.25, 4.35], fov: 43 }} dpr={[1, 1.7]} gl={{ antialias: true, alpha: true }}>
+        <SceneSurface targetRotation={targetRotation} isDragging={isDragging} />
+      </Canvas>
     </div>
   );
 }
@@ -404,7 +412,7 @@ function App() {
         <div className="scene-wrap">
           <HeroScene />
           <div className="scene-overlay-chip">
-            <div className="scene-chip">drag to inspect setup</div>
+            <div className="scene-chip">drag to rotate setup</div>
           </div>
         </div>
       </section>
