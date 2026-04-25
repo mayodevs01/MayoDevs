@@ -71,16 +71,20 @@ a {
   height: 100%;
   min-height: 100%;
   cursor: grab;
+  perspective: 1400px;
 }
 
 .scene-shell.is-dragging {
   cursor: grabbing;
 }
 
-.scene-shell canvas {
-  display: block;
-  width: 100% !important;
-  height: 100% !important;
+.scene-stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: inherit;
+  transform-style: preserve-3d;
+  transition: transform 120ms ease-out;
 }
 
 .scene-wrap::before {
@@ -95,11 +99,6 @@ a {
   clip-path: polygon(6% 0, 100% 0, 94% 100%, 0 100%);
 }
 
-.scene-wrap canvas {
-  position: relative;
-  z-index: 2;
-}
-
 .scene-overlay-chip {
   position: absolute;
   left: 50%;
@@ -107,6 +106,258 @@ a {
   z-index: 4;
   transform: translateX(-50%);
   pointer-events: none;
+}
+
+.scene-ring,
+.scene-monitor,
+.scene-avatar,
+.scene-desk,
+.scene-keyboard,
+.scene-platform,
+.scene-particle {
+  position: absolute;
+  transform-style: preserve-3d;
+}
+
+.scene-ring {
+  left: 50%;
+  top: 51%;
+  border: 1px solid rgba(71, 243, 255, 0.14);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) translateZ(-5rem);
+}
+
+.scene-ring-outer {
+  width: min(35rem, 88%);
+  height: min(35rem, 88%);
+}
+
+.scene-ring-inner {
+  width: min(26rem, 66%);
+  height: min(26rem, 66%);
+  opacity: 0.55;
+}
+
+.scene-monitor {
+  width: clamp(8rem, 18vw, 13rem);
+  height: clamp(5rem, 9vw, 7.5rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.1rem 1rem;
+  border: 1px solid rgba(71, 243, 255, 0.34);
+  border-radius: 0.55rem;
+  background: linear-gradient(145deg, rgba(7, 18, 26, 0.96), rgba(3, 4, 7, 0.96));
+  box-shadow: 0 0 34px rgba(71, 243, 255, 0.16);
+}
+
+.scene-monitor::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -3rem;
+  width: 1rem;
+  height: 3rem;
+  background: linear-gradient(180deg, #05070b, #10151f);
+  transform: translateX(-50%) translateZ(-1rem);
+}
+
+.scene-monitor-left {
+  left: 8%;
+  top: 28%;
+  transform: rotateY(34deg) rotateX(10deg) translateZ(1rem);
+}
+
+.scene-monitor-center {
+  left: 50%;
+  top: 22%;
+  width: clamp(14rem, 24vw, 18rem);
+  height: clamp(8rem, 11vw, 10rem);
+  transform: translateX(-50%) translateZ(4rem);
+}
+
+.scene-monitor-right {
+  right: 8%;
+  top: 28%;
+  transform: rotateY(-34deg) rotateX(10deg) translateZ(1rem);
+}
+
+.code-line {
+  display: block;
+  height: 0.38rem;
+  border-radius: 999px;
+}
+
+.line-cyan {
+  background: #47f3ff;
+  box-shadow: 0 0 18px rgba(71, 243, 255, 0.4);
+}
+
+.line-white {
+  background: rgba(240, 248, 255, 0.88);
+}
+
+.code-line.short {
+  width: 38%;
+}
+
+.code-line.medium {
+  width: 58%;
+}
+
+.code-line.long {
+  width: 78%;
+}
+
+.scene-avatar {
+  left: 50%;
+  top: 50%;
+  width: 14rem;
+  height: 15rem;
+  transform: translate(-50%, -12%) translateZ(6rem);
+}
+
+.scene-head {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 4.6rem;
+  height: 4.6rem;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 34%, #ffffff 0, #d4e1ea 45%, #8895a0 100%);
+  transform: translateX(-50%) translateZ(4rem);
+  box-shadow: inset 0 -0.6rem 1.4rem rgba(0, 0, 0, 0.18);
+}
+
+.scene-headset {
+  position: absolute;
+  left: 50%;
+  top: -0.15rem;
+  width: 5.8rem;
+  height: 5rem;
+  border: 0.45rem solid #06080d;
+  border-bottom: none;
+  border-radius: 999px 999px 0 0;
+  transform: translateX(-50%) translateZ(3rem);
+}
+
+.scene-neck {
+  position: absolute;
+  left: 50%;
+  top: 4rem;
+  width: 1rem;
+  height: 1.6rem;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #d8e2ea, #8e9ca6);
+  transform: translateX(-50%) translateZ(1rem);
+}
+
+.scene-body {
+  position: absolute;
+  left: 50%;
+  top: 4.8rem;
+  width: 8.8rem;
+  height: 10.4rem;
+  border-radius: 4rem 4rem 1.6rem 1.6rem;
+  background: linear-gradient(180deg, #0a1018, #02050a 85%);
+  transform: translateX(-50%) translateZ(3rem);
+  box-shadow: inset 0.8rem -1.4rem 3rem rgba(0, 0, 0, 0.45);
+}
+
+.scene-core-glow {
+  position: absolute;
+  left: 50%;
+  top: 8.1rem;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(71, 243, 255, 0.9), rgba(71, 243, 255, 0.05));
+  transform: translateX(-50%) translateZ(4rem);
+  filter: blur(0.08rem);
+}
+
+.scene-arm {
+  position: absolute;
+  top: 8rem;
+  width: 2.2rem;
+  height: 5.6rem;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #eef7ff, #99a9b4);
+  box-shadow: inset -0.5rem -0.7rem 1rem rgba(0, 0, 0, 0.18);
+}
+
+.scene-arm-left {
+  left: 0.8rem;
+  transform: rotate(24deg) translateZ(1.8rem);
+  animation: arm-left 1.1s ease-in-out infinite alternate;
+}
+
+.scene-arm-right {
+  right: 0.8rem;
+  transform: rotate(-24deg) translateZ(1.8rem);
+  animation: arm-right 1.05s ease-in-out infinite alternate;
+}
+
+.scene-desk {
+  left: 50%;
+  bottom: 13%;
+  width: min(42rem, 90%);
+  height: 7rem;
+  border-radius: 0.6rem;
+  background: linear-gradient(180deg, #090d12, #02050a);
+  transform: translateX(-50%) translateZ(2rem);
+  box-shadow: 0 1.2rem 5rem rgba(0, 0, 0, 0.55);
+}
+
+.scene-desk::before,
+.scene-desk::after {
+  content: "";
+  position: absolute;
+  bottom: -8rem;
+  width: 1rem;
+  height: 8rem;
+  background: linear-gradient(180deg, #0d1219, #02050a);
+}
+
+.scene-desk::before {
+  left: 2rem;
+}
+
+.scene-desk::after {
+  right: 2rem;
+}
+
+.scene-keyboard {
+  left: 50%;
+  bottom: 20%;
+  width: clamp(10rem, 22vw, 16rem);
+  height: 2.4rem;
+  border: 1px solid rgba(71, 243, 255, 0.18);
+  border-radius: 0.45rem;
+  background:
+    repeating-linear-gradient(90deg, rgba(71, 243, 255, 0.95) 0 0.5rem, rgba(7, 9, 13, 0.3) 0.5rem 1.2rem),
+    linear-gradient(180deg, #06090d, #02050a);
+  transform: translateX(-50%) rotateX(72deg) translateZ(1rem);
+  box-shadow: 0 0 24px rgba(71, 243, 255, 0.14);
+}
+
+.scene-platform {
+  left: 50%;
+  bottom: 8%;
+  width: min(44rem, 92%);
+  height: 1rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #121824, #070a10);
+  transform: translateX(-50%) translateZ(-1rem);
+}
+
+.scene-particle {
+  width: 1.7rem;
+  height: 1.7rem;
+  background: linear-gradient(145deg, #ffffff, #90f2ff);
+  transform: rotate(45deg) translateZ(8rem);
+  box-shadow: 0 0 24px rgba(71, 243, 255, 0.14);
+  animation: float-particle 3.2s ease-in-out infinite;
 }
 
 .scene-chip {
@@ -123,22 +374,28 @@ a {
   user-select: none;
 }
 
-@keyframes blink {
-  50% {
-    opacity: 0.2;
-  }
-}
-
-@keyframes typing-bar {
-  to {
-    transform: translateX(-50%) rotate(-2deg);
-  }
-}
-
 @keyframes pulse-core {
   50% {
     transform: scale(1.08);
     opacity: 0.72;
+  }
+}
+
+@keyframes arm-left {
+  to {
+    transform: rotate(32deg) translateZ(1.8rem) translateY(0.25rem);
+  }
+}
+
+@keyframes arm-right {
+  to {
+    transform: rotate(-32deg) translateZ(1.8rem) translateY(-0.25rem);
+  }
+}
+
+@keyframes float-particle {
+  50% {
+    transform: rotate(45deg) translateZ(8rem) translateY(-0.8rem);
   }
 }
 
@@ -366,6 +623,26 @@ a {
     inset: 5% 3% 6%;
     clip-path: none;
     border-radius: 0.5rem;
+  }
+
+  .scene-monitor-left,
+  .scene-monitor-right {
+    display: none;
+  }
+
+  .scene-monitor-center {
+    top: 18%;
+    width: min(15rem, 70vw);
+    height: 7.8rem;
+  }
+
+  .scene-avatar {
+    width: 11rem;
+    height: 12rem;
+  }
+
+  .scene-desk {
+    height: 5rem;
   }
 
   .primary-btn,

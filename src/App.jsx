@@ -1,4 +1,3 @@
-import { Canvas, useFrame } from "@react-three/fiber";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import {
@@ -15,7 +14,7 @@ import {
   Terminal,
   WandSparkles,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -51,289 +50,42 @@ const projects = [
   "UI designs",
 ];
 
-function Rig({ targetRotation, isDragging }) {
-  const group = useRef();
-  const leftHand = useRef();
-  const rightHand = useRef();
-  const head = useRef();
-  const cursor = useRef();
-  const halo = useRef();
-
-  useFrame(({ clock }) => {
-    const t = clock.getElapsedTime();
-    if (!group.current || !leftHand.current || !rightHand.current || !head.current || !cursor.current) return;
-
-    const idleY = Math.sin(t * 0.35) * 0.08;
-    const idleX = Math.cos(t * 0.25) * 0.03;
-    group.current.rotation.y += ((targetRotation.y + idleY) - group.current.rotation.y) * 0.08;
-    group.current.rotation.x += ((targetRotation.x + idleX) - group.current.rotation.x) * 0.08;
-    leftHand.current.position.y = 0.6 + Math.sin(t * 11) * 0.035;
-    rightHand.current.position.y = 0.6 + Math.cos(t * 13) * 0.035;
-    head.current.rotation.y = Math.sin(t * 0.8) * 0.08;
-    cursor.current.position.x = 0.34 + Math.sin(t * 4) * 0.28;
-    cursor.current.material.opacity = Math.sin(t * 10) > 0 ? 1 : 0.15;
-    if (halo.current) {
-      halo.current.rotation.z += 0.002;
-      halo.current.material.opacity = isDragging ? 0.34 : 0.18;
-    }
-  });
-
-  return (
-    <group ref={group} position={[0, -0.8, 0]}>
-      <mesh ref={halo} position={[0, 1.15, -0.2]} rotation={[0, 0, 0.2]}>
-        <torusGeometry args={[2.45, 0.018, 10, 120]} />
-        <meshBasicMaterial color="#47f3ff" transparent opacity={0.18} />
-      </mesh>
-      <Desk />
-      <Coder leftHand={leftHand} rightHand={rightHand} head={head} />
-      <Monitor cursor={cursor} position={[0, 1.03, -0.74]} />
-      <Monitor position={[-1.15, 0.9, -0.88]} rotation={[0, 0.28, 0]} small />
-      <Monitor position={[1.15, 0.9, -0.88]} rotation={[0, -0.28, 0]} small />
-      <Keyboard />
-      <CodeParticles />
-    </group>
-  );
-}
-
-function Desk() {
-  return (
-    <group>
-      <mesh position={[0, 0.24, 0]}>
-        <boxGeometry args={[3.4, 0.16, 1.55]} />
-        <meshStandardMaterial color="#111722" metalness={0.75} roughness={0.28} />
-      </mesh>
-      <mesh position={[-1.48, -0.35, 0.48]}>
-        <boxGeometry args={[0.12, 1.1, 0.12]} />
-        <meshStandardMaterial color="#0a0d12" metalness={0.9} roughness={0.22} />
-      </mesh>
-      <mesh position={[1.48, -0.35, 0.48]}>
-        <boxGeometry args={[0.12, 1.1, 0.12]} />
-        <meshStandardMaterial color="#0a0d12" metalness={0.9} roughness={0.22} />
-      </mesh>
-      <mesh position={[-1.48, -0.35, -0.48]}>
-        <boxGeometry args={[0.12, 1.1, 0.12]} />
-        <meshStandardMaterial color="#0a0d12" metalness={0.9} roughness={0.22} />
-      </mesh>
-      <mesh position={[1.48, -0.35, -0.48]}>
-        <boxGeometry args={[0.12, 1.1, 0.12]} />
-        <meshStandardMaterial color="#0a0d12" metalness={0.9} roughness={0.22} />
-      </mesh>
-    </group>
-  );
-}
-
-function Coder({ leftHand, rightHand, head }) {
-  return (
-    <group position={[0, 0.14, 0.28]}>
-      <mesh position={[0, 0.45, 0.16]} rotation={[0.08, 0, 0]}>
-        <capsuleGeometry args={[0.33, 0.58, 10, 20]} />
-        <meshStandardMaterial color="#151a23" metalness={0.35} roughness={0.42} />
-      </mesh>
-      <mesh ref={head} position={[0, 1.04, 0.08]}>
-        <sphereGeometry args={[0.24, 36, 24]} />
-        <meshStandardMaterial color="#d8e2ea" metalness={0.55} roughness={0.28} />
-      </mesh>
-      <mesh position={[0, 1.09, -0.05]}>
-        <torusGeometry args={[0.28, 0.025, 8, 38]} />
-        <meshStandardMaterial color="#07090d" metalness={0.8} roughness={0.18} />
-      </mesh>
-      <mesh position={[-0.14, 1.06, 0.29]}>
-        <boxGeometry args={[0.08, 0.035, 0.025]} />
-        <meshStandardMaterial color="#47f3ff" emissive="#47f3ff" emissiveIntensity={1.4} />
-      </mesh>
-      <mesh position={[0.14, 1.06, 0.29]}>
-        <boxGeometry args={[0.08, 0.035, 0.025]} />
-        <meshStandardMaterial color="#47f3ff" emissive="#47f3ff" emissiveIntensity={1.4} />
-      </mesh>
-      <mesh ref={leftHand} position={[-0.38, 0.62, 0.58]} rotation={[0.9, -0.25, 0.2]}>
-        <capsuleGeometry args={[0.07, 0.43, 8, 16]} />
-        <meshStandardMaterial color="#cfd9e1" metalness={0.35} roughness={0.32} />
-      </mesh>
-      <mesh ref={rightHand} position={[0.38, 0.62, 0.58]} rotation={[0.9, 0.25, -0.2]}>
-        <capsuleGeometry args={[0.07, 0.43, 8, 16]} />
-        <meshStandardMaterial color="#cfd9e1" metalness={0.35} roughness={0.32} />
-      </mesh>
-    </group>
-  );
-}
-
-function Monitor({ position, rotation = [0, 0, 0], small = false, cursor }) {
-  const w = small ? 0.82 : 1.25;
-  const h = small ? 0.48 : 0.72;
-  const lineWidths = small ? [0.34, 0.26, 0.21] : [0.64, 0.44, 0.52, 0.38];
-
-  return (
-    <group position={position} rotation={rotation}>
-      <mesh>
-        <boxGeometry args={[w, h, 0.06]} />
-        <meshStandardMaterial color="#05070b" metalness={0.85} roughness={0.16} />
-      </mesh>
-      <mesh position={[0, 0, 0.035]}>
-        <planeGeometry args={[w * 0.88, h * 0.74]} />
-        <meshStandardMaterial color="#07121a" emissive="#082f38" emissiveIntensity={0.95} />
-      </mesh>
-      {lineWidths.map((width, index) => (
-        <mesh key={index} position={[-w * 0.17 + width * 0.5, h * 0.22 - index * 0.12, 0.07]}>
-          <planeGeometry args={[width, small ? 0.026 : 0.032]} />
-          <meshBasicMaterial color={index % 2 ? "#d7e0e8" : "#47f3ff"} />
-        </mesh>
-      ))}
-      {!small && (
-        <mesh ref={cursor} position={[0.22, -0.14, 0.075]}>
-          <boxGeometry args={[0.045, 0.14, 0.01]} />
-          <meshStandardMaterial
-            color="#ffffff"
-            emissive="#47f3ff"
-            emissiveIntensity={1.6}
-            transparent
-          />
-        </mesh>
-      )}
-      <mesh position={[0, -h * 0.68, 0]}>
-        <boxGeometry args={[0.13, 0.34, 0.06]} />
-        <meshStandardMaterial color="#0b0f16" metalness={0.85} roughness={0.2} />
-      </mesh>
-    </group>
-  );
-}
-
-function Keyboard() {
-  const keys = useMemo(() => {
-    const list = [];
-    for (let row = 0; row < 4; row += 1) {
-      for (let col = 0; col < 13; col += 1) {
-        list.push([col * 0.105 - 0.63 + row * 0.02, 0.37, 0.68 + row * 0.075]);
-      }
-    }
-    return list;
-  }, []);
-
-  return (
-    <group>
-      <mesh position={[0, 0.33, 0.78]} rotation={[-0.06, 0, 0]}>
-        <boxGeometry args={[1.55, 0.06, 0.46]} />
-        <meshStandardMaterial color="#07090d" metalness={0.75} roughness={0.2} />
-      </mesh>
-      {keys.map((position, index) => (
-        <mesh key={index} position={position}>
-          <boxGeometry args={[0.07, 0.025, 0.045]} />
-          <meshStandardMaterial
-            color={index % 7 === 0 ? "#47f3ff" : "#171d26"}
-            emissive={index % 7 === 0 ? "#47f3ff" : "#000000"}
-            emissiveIntensity={index % 7 === 0 ? 0.65 : 0}
-            metalness={0.45}
-            roughness={0.32}
-          />
-        </mesh>
-      ))}
-    </group>
-  );
-}
-
-function CodeParticles() {
-  const particles = [
-    { color: "#47f3ff", size: 0.12 },
-    { color: "#d7e0e8", size: 0.08 },
-    { color: "#47f3ff", size: 0.1 },
-    { color: "#d7e0e8", size: 0.07 },
-    { color: "#47f3ff", size: 0.09 },
-    { color: "#d7e0e8", size: 0.06 },
-    { color: "#47f3ff", size: 0.08 },
-  ];
-
-  return (
-    <group position={[0, 1.35, 0.05]}>
-      {particles.map((particle, index) => {
-        const angle = (index / particles.length) * Math.PI * 2;
-        return (
-          <DriftParticle
-            key={index}
-            color={particle.color}
-            size={particle.size}
-            position={[Math.cos(angle) * 1.35, Math.sin(index) * 0.2, Math.sin(angle) * 0.5]}
-            rotation={[index * 0.4, angle, 0]}
-            speed={0.6 + index * 0.08}
-          />
-        );
-      })}
-    </group>
-  );
-}
-
-function DriftParticle({ color, position, rotation, size, speed }) {
-  const ref = useRef();
-
-  useFrame(({ clock }) => {
-    if (!ref.current) return;
-    const t = clock.getElapsedTime() * speed;
-    ref.current.position.y = position[1] + Math.sin(t) * 0.08;
-    ref.current.rotation.x += 0.006;
-    ref.current.rotation.y += 0.008;
-  });
-
-  return (
-    <mesh ref={ref} position={position} rotation={rotation}>
-      <octahedronGeometry args={[size, 0]} />
-      <meshStandardMaterial
-        color={color}
-        emissive={color}
-        emissiveIntensity={0.9}
-        metalness={0.4}
-        roughness={0.24}
-      />
-    </mesh>
-  );
-}
-
-function SceneSurface({ targetRotation, isDragging }) {
-  return (
-    <>
-      <ambientLight intensity={1.05} />
-      <hemisphereLight intensity={0.9} color="#d7e0e8" groundColor="#05070b" />
-      <pointLight position={[2.5, 3, 2]} color="#47f3ff" intensity={35} />
-      <pointLight position={[-3, 2.4, -1]} color="#ffffff" intensity={16} />
-      <pointLight position={[0, 1.6, 3.5]} color="#8ae8ff" intensity={10} />
-      <Rig targetRotation={targetRotation} isDragging={isDragging} />
-      <mesh position={[0, -1.28, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <circleGeometry args={[2.5, 64]} />
-        <meshBasicMaterial color="#061018" transparent opacity={0.8} />
-      </mesh>
-      <mesh position={[0, -1.27, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[2.1, 2.7, 64]} />
-        <meshBasicMaterial color="#47f3ff" transparent opacity={0.12} />
-      </mesh>
-    </>
-  );
-}
+const particles = [
+  { x: "10%", y: "23%", delay: "0s" },
+  { x: "20%", y: "14%", delay: "0.6s" },
+  { x: "78%", y: "18%", delay: "1.1s" },
+  { x: "88%", y: "28%", delay: "1.7s" },
+  { x: "24%", y: "72%", delay: "0.4s" },
+  { x: "74%", y: "74%", delay: "1.3s" },
+];
 
 function HeroScene() {
-  const [targetRotation, setTargetRotation] = useState({ x: -0.08, y: 0.24 });
+  const [rotation, setRotation] = useState({ x: -12, y: 18 });
   const [isDragging, setIsDragging] = useState(false);
   const dragStart = useRef({ x: 0, y: 0 });
-  const dragOrigin = useRef({ x: -0.08, y: 0.24 });
+  const dragOrigin = useRef({ x: -12, y: 18 });
 
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
   const handlePointerDown = (event) => {
     setIsDragging(true);
     dragStart.current = { x: event.clientX, y: event.clientY };
-    dragOrigin.current = { ...targetRotation };
+    dragOrigin.current = { ...rotation };
   };
 
   const handlePointerMove = (event) => {
     if (!isDragging) return;
+
     const dx = event.clientX - dragStart.current.x;
     const dy = event.clientY - dragStart.current.y;
 
-    setTargetRotation({
-      x: clamp(dragOrigin.current.x + dy * 0.004, -0.55, 0.4),
-      y: clamp(dragOrigin.current.y + dx * 0.006, -1.1, 1.1),
+    setRotation({
+      x: clamp(dragOrigin.current.x - dy * 0.08, -28, 18),
+      y: clamp(dragOrigin.current.y + dx * 0.09, -32, 32),
     });
   };
 
-  const stopDragging = () => {
-    setIsDragging(false);
-  };
+  const stopDragging = () => setIsDragging(false);
 
   return (
     <div
@@ -343,9 +95,56 @@ function HeroScene() {
       onPointerUp={stopDragging}
       onPointerLeave={stopDragging}
     >
-      <Canvas camera={{ position: [0, 1.25, 4.35], fov: 43 }} dpr={[1, 1.7]} gl={{ antialias: true, alpha: true }}>
-        <SceneSurface targetRotation={targetRotation} isDragging={isDragging} />
-      </Canvas>
+      <div
+        className="scene-stage"
+        style={{
+          transform: `rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)`,
+        }}
+      >
+        <div className="scene-ring scene-ring-outer" />
+        <div className="scene-ring scene-ring-inner" />
+
+        {particles.map((particle) => (
+          <span
+            key={`${particle.x}-${particle.y}`}
+            className="scene-particle"
+            style={{ left: particle.x, top: particle.y, animationDelay: particle.delay }}
+          />
+        ))}
+
+        <div className="scene-monitor scene-monitor-left">
+          <span className="code-line line-cyan short" />
+          <span className="code-line line-white medium" />
+          <span className="code-line line-cyan medium" />
+        </div>
+
+        <div className="scene-monitor scene-monitor-center">
+          <span className="code-line line-cyan long" />
+          <span className="code-line line-white medium" />
+          <span className="code-line line-cyan medium" />
+          <span className="code-line line-white short" />
+        </div>
+
+        <div className="scene-monitor scene-monitor-right">
+          <span className="code-line line-cyan medium" />
+          <span className="code-line line-white short" />
+          <span className="code-line line-cyan short" />
+        </div>
+
+        <div className="scene-avatar">
+          <div className="scene-headset" />
+          <div className="scene-head" />
+          <div className="scene-neck" />
+          <div className="scene-body" />
+          <div className="scene-core-glow" />
+          <div className="scene-arm scene-arm-left" />
+          <div className="scene-arm scene-arm-right" />
+        </div>
+
+        <div className="scene-desk" />
+        <div className="scene-keyboard" />
+        <div className="scene-platform" />
+      </div>
     </div>
   );
 }
