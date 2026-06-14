@@ -5,7 +5,6 @@ import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion"
 import gsap from "gsap";
 import {
   ArrowUpRight,
-  Bot,
   BrainCircuit,
   Command,
   Cpu,
@@ -13,12 +12,13 @@ import {
   Mail,
   Orbit,
   Play,
+  Rocket,
   Sparkles,
   Wand2,
   X,
   Zap
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { type MouseEvent as ReactMouseEvent, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 
 const rotatingWords = ["Design", "Content", "Automation", "AI", "SaaS"];
@@ -80,6 +80,9 @@ const timeline = [
   ["03", "AI Products", "Chatbots, agents, MVP flows, and product-grade web experiences."],
   ["04", "Automation Ops", "CRM, lead gen, email, workflow, and marketing command systems."]
 ];
+const launchMailto = `mailto:mayodevs01@gmail.com?subject=${encodeURIComponent("Project Inquiry - MayoDevs")}&body=${encodeURIComponent(
+  "Hi Mayo,\n\nI'd like to discuss a project with you.\n\nProject Type:\nBudget:\nTimeline:\n\nLooking forward to hearing from you."
+)}`;
 
 function StarField() {
   const points = useRef<THREE.Points>(null);
@@ -130,44 +133,10 @@ function Cursor() {
   );
 }
 
-function AskMayo() {
-  const [open, setOpen] = useState(false);
-  const [answer, setAnswer] = useState("Ask me what MAYODEVS can build for your brand, content, product, or operations.");
-  const prompts = [
-    ["Need leads?", "Build a lead generation system with CRM routing, enrichment, and automated follow-ups."],
-    ["Need content?", "Create a creator engine with hooks, captions, thumbnails, edits, and weekly publishing systems."],
-    ["Need an MVP?", "Design and ship a SaaS MVP with AI workflows, dashboards, onboarding, and automations."]
-  ];
-
-  return (
-    <motion.div className="assistant" initial={{ y: 80, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 1.2 }}>
-      <button className="assistant-trigger" onClick={() => setOpen(!open)} aria-label="Open Ask Mayo">
-        <Bot size={20} />
-        <span>Ask Mayo</span>
-      </button>
-      <AnimatePresence>
-        {open && (
-          <motion.div className="assistant-panel" initial={{ opacity: 0, y: 18, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 18, scale: 0.96 }}>
-            <div className="assistant-head">
-              <span>AI studio assistant</span>
-              <button onClick={() => setOpen(false)} aria-label="Close Ask Mayo"><X size={16} /></button>
-            </div>
-            <p>{answer}</p>
-            <div className="prompt-grid">
-              {prompts.map(([label, value]) => (
-                <button key={label} onClick={() => setAnswer(value)}>{label}</button>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
-  );
-}
-
 export default function Home() {
   const [word, setWord] = useState(0);
   const [activeProject, setActiveProject] = useState<(typeof projects)[number] | null>(null);
+  const labRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll();
   const heroY = useTransform(scrollYProgress, [0, 0.35], [0, 150]);
 
@@ -177,10 +146,28 @@ export default function Home() {
     return () => window.clearInterval(timer);
   }, []);
 
+  const handleLabPointer = (event: ReactMouseEvent<HTMLDivElement>) => {
+    if (!labRef.current) return;
+    const rect = labRef.current.getBoundingClientRect();
+    const x = ((event.clientX - rect.left) / rect.width - 0.5) * 2;
+    const y = ((event.clientY - rect.top) / rect.height - 0.5) * 2;
+    labRef.current.style.setProperty("--mx", x.toFixed(3));
+    labRef.current.style.setProperty("--my", y.toFixed(3));
+  };
+
   return (
     <main>
       <Cursor />
-      <AskMayo />
+      <motion.a
+        className="launch-project"
+        href={launchMailto}
+        initial={{ y: 80, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 1.2 }}
+      >
+        <Rocket size={19} />
+        <span>Launch Project</span>
+      </motion.a>
       <nav className="topbar">
         <a href="#hero" className="brand"><Command size={18} /> MAYODEVS</a>
         <div>
@@ -246,11 +233,36 @@ export default function Home() {
           <span><Cpu size={16} /> AI Lab</span>
           <h2>Connected automations, AI products, and business operating systems.</h2>
         </div>
-        <div className="network">
-          <div className="network-core"><Orbit size={34} /> MAYO OS</div>
+        <div className="network universe" ref={labRef} onMouseMove={handleLabPointer}>
+          <div className="cosmic-noise" />
+          <div className="nebula nebula-one" />
+          <div className="nebula nebula-two" />
+          <div className="streak streak-one" />
+          <div className="streak streak-two" />
+          <div className="orbit-path orbit-path-one" />
+          <div className="orbit-path orbit-path-two" />
+          <div className="orbit-path orbit-path-three" />
+          <div className="network-core">
+            <span className="core-glow" />
+            <Orbit size={34} />
+            <strong>MAYO OS</strong>
+          </div>
           {aiServices.map((service, index) => (
-            <motion.div className="node" key={service} style={{ "--i": index } as React.CSSProperties} whileHover={{ scale: 1.12 }}>
-              {service}
+            <motion.div
+              className="orbit-lane"
+              key={service}
+              style={{
+                "--i": index,
+                "--angle": `${index * 30}deg`,
+                "--orbit": `${index % 3}`,
+                "--duration": `${28 + (index % 4) * 6}s`,
+                "--delay": `${index * -2.4}s`
+              } as React.CSSProperties}
+            >
+              <motion.div className="node">
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <strong>{service}</strong>
+              </motion.div>
             </motion.div>
           ))}
         </div>
@@ -299,7 +311,8 @@ export default function Home() {
           <div className="terminal">
             <p><b>mayo@system</b> run discovery-call --scope creative+ai</p>
             <p><b>status</b> ready to design, automate, and ship</p>
-            <a href="mailto:hello@mayodevs.com"><Mail size={18} /> hello@mayodevs.com</a>
+            <p><b>Email:</b> <a className="terminal-email" href="mailto:mayodevs01@gmail.com">mayodevs01@gmail.com</a></p>
+            <a href={launchMailto}><Mail size={18} /> Email Me Directly</a>
           </div>
         </div>
       </section>
